@@ -32,6 +32,6 @@ Scanpy is a Python-based toolkit used for analyzing single-cell gene expression 
 ### 2. Principal Component Analysis
 ![img_2.png](img_2.png)
 ### 3. Clustering
-![img_3.png](img_3.png)
+![img_4.png](img_4.png)
 ### 4. Marker Gene Identifications
 

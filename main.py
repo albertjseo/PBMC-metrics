@@ -6,8 +6,6 @@ sc.settings.verbosity = 0  # providing additional information / feedback from pr
 sc.logging.print_header() #Versions that might influence the numerical results. Matplotlib and Seaborn are excluded from this.
 sc.settings.set_figure_params(dpi=100, facecolor="white") # sets resolutions, sizing, styling, and formatting of figure.
 
-results_file = "write/pbmc3k.h5ad"  # the file that will store the analysis results
-
 # adata is an AnnData object that can be sliced like a dataframe. AnnData stores a data matrix with observations, variables, and unstructures annotations.
 # read_10x_mtx returns an AnnData object
 adata = sc.read_10x_mtx(
@@ -43,9 +41,38 @@ sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
 # Plot high variance genes (darker) transposed ontop of non-high variance genes (lighter)
 sc.pl.highly_variable_genes(adata)
 
+# scale each gene to unit of variance, also allows effects plot
+sc.pp.scale(adata, max_value=10)
+
 # Principal Component Analysis
 # tl is a tool that is used to transform data that is not preprocessing
 sc.tl.pca(adata, svd_solver="arpack") # PCA applies principal component analysis
 
 # plot the PCA and color by gene expression (louvain would result in Louvain clusters)
-sc.pl.pca(adata, color="CST3")
+sc.pl.pca(adata, color="CST3") # CST3: Cystatin C
+
+sc.pl.pca_variance_ratio(adata, log=True)
+adata.write("results.h5ad") # save the values as a results.h5ad file
+
+# Neighbor Graphs
+sc.pp.neighbors(adata, n_neighbors=10, n_pcs=40) # Method for estimating connectivities of data points
+
+sc.tl.umap(adata) # Uniform Manifold Approximation and Projection, returns adata
+
+# Scatter plot in UMAP basis -- CST3: Cystatin C, NKG7: Natural killer cell granule protein 7, PPBP: pro-platelet basic protein
+sc.pl.umap(adata, color=["CST3", "NKG7", "PPBP"], use_raw=False) # use_raw = False to use corrected gene expression.
+
+# Clustering cells into sub-groups
+sc.tl.leiden(
+    adata,
+    resolution=0.9,
+    random_state=0,
+    flavor="igraph",
+    n_iterations=2,
+    directed=False,
+)
+
+# Plot sub-groups
+sc.pl.umap(adata, color=["leiden", "CST3", "NKG7"])
+
+adata.write("results2.h5ad") # save the values by creating results2.h5ad file
